@@ -1,5 +1,3 @@
-PostureAlert
-
 A simple app that alerts you when your posture needs fixing.
 What it does
 
@@ -10,10 +8,10 @@ Works completely on your device (no data sent anywhere)
 How to use it
 
 Install requirements:
-Copypip install -r requirements.txt
+pip install -r requirements.txt
 
 Run the app:
-Copypython3 posture_gui.py
+python3 posture_gui.py
 
 How it works
 The app uses your camera to track your body position. A machine learning model (Random Forest) analyzes your posture and decides if it's good or bad. When your posture is bad, you'll get an alert after your set timer.
