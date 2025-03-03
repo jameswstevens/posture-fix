@@ -1,1 +1,5 @@
+Get reminded when you have bad posture.
+
+Camera calculates body point distances and angles. Model evaluates good vs bad posture. 
+
 run: python3 posture_gui
