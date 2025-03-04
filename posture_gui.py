@@ -10,12 +10,10 @@ class PostureDetectorGUI:
         self.root.title("Posture Detector Control Panel")
         self.root.geometry("400x300")
         
-        # Variables
         self.is_running = False
         self.process = None
         self.reminder_time = tk.StringVar(value="30")
         
-        # Create GUI elements
         self.create_widgets()
         
     def create_widgets(self):
@@ -47,7 +45,6 @@ class PostureDetectorGUI:
     def toggle_detection(self):
         if not self.is_running:
             try:
-                # Start the detection script with the reminder time parameter
                 cmd = [sys.executable, "posture_detector.py", self.reminder_time.get()]
                 self.process = subprocess.Popen(cmd)
                 self.is_running = True
@@ -66,7 +63,6 @@ class PostureDetectorGUI:
     
     def recalibrate(self):
         if self.is_running and self.process:
-            # Create a file to trigger recalibration
             with open("recalibrate.trigger", "w") as f:
                 f.write("recalibrate")
             self.status_label["text"] = "Status: Recalibrating..."

@@ -2,11 +2,10 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import time
-from playsound import playsound
 import os
 import pandas as pd
-import joblib  # Add to your imports at the top
-import subprocess  # Add to your imports at the top
+import joblib
+import subprocess
 import argparse
 import threading
 
@@ -28,30 +27,25 @@ for file in os.listdir('.'):
     print(f"  - {file}")
 print("=" * 50)
 
-# Now try loading with more error details
 try:
     model = joblib.load(model_path)
     print("ML model loaded successfully")
 except Exception as e:
     print(f"Detailed error loading model: {type(e).__name__} - {str(e)}")
-    # Don't exit yet, let's see what's happening
     exit(1)
 
-# Initialize MediaPipe Pose and webcam
 mp_pose = mp.solutions.pose
 mp_drawing = mp.solutions.drawing_utils
 pose = mp_pose.Pose(static_image_mode=False, min_detection_confidence=0.5, min_tracking_confidence=0.5)
 cap = cv2.VideoCapture(0)
 
-# Add data collection variables
-collecting_data = True  # Set to True to collect training data
+collecting_data = True
 posture_data = []
 data_collection_count = 0
 save_interval = 20  # Save to CSV every 20 samples
 last_sample_time = 0
 sample_cooldown = 0.1  # Half-second cooldown between samples
 
-# Rest of your existing functions (calculate_angle, draw_angle, distance)
 def calculate_angle(p1, p2, p3):
     """Calculate the angle between three points"""
     a = np.array(p1)
@@ -82,7 +76,7 @@ def distance(point1, point2):
     """Calculate Euclidean distance between two points"""
     return np.sqrt((point1[0] - point2[0])**2 + (point1[1] - point2[1])**2)
 
-# Function to save collected data
+# Save collected data
 def save_data():
     global posture_data, data_collection_count
     if posture_data:
@@ -94,7 +88,6 @@ def save_data():
         print(f"Saved {len(posture_data)} samples. Total: {data_collection_count}")
         posture_data = []  # Clear after saving
 
-# Variables for calibration and alerts
 is_calibrated = False
 calibration_frames = 0
 calibration_shoulder_angles = []
@@ -105,19 +98,14 @@ calibration_shoulder_heights = []
 calibration_ear_heights = []
 last_alert_time = time.time()
 alert_cooldown = 3  # seconds
-sound_file = "alert.mp3"  # You'll need to add a sound file or change this path
 
-# For collecting current frame data
 current_frame_data = None
 
-# Add to calibration variables
 calibration_face_widths = []
 calibration_face_shoulder_ratios = []
 
-# Add these variables with the other calibration variables
 poor_posture_start_time = None
 
-# Parse command line arguments
 parser = argparse.ArgumentParser()
 parser.add_argument('reminder_time', type=int, nargs='?', default=30,
                    help='Time in seconds before posture reminder')
@@ -126,7 +114,6 @@ args = parser.parse_args()
 # Use the argument
 poor_posture_threshold = args.reminder_time
 
-# Add this function after your other function definitions
 def notify(title, text):
     CMD = '''
     on run argv
@@ -235,7 +222,7 @@ while cap.isOpened():
             current_time = time.time()
             posture_issues = []
             
-            # Use ML model for prediction
+            # ML prediction
             features = np.array([[
                 shoulder_angle,
                 neck_angle,
@@ -256,7 +243,7 @@ while cap.isOpened():
                 status = "Good Posture (ML)"
                 color = (0, 255, 0)  # Green
 
-            # Determine posture status based on issues
+            # Determine posture status
             if posture_issues:
                 status = f"Poor Posture: {', '.join(posture_issues)}"
                 color = (0, 0, 255)  # Red
@@ -264,7 +251,7 @@ while cap.isOpened():
                 status = "Good Posture"
                 color = (0, 255, 0)  # Green
                 
-            # Display data collection status on screen
+            # Display data collection
             if collecting_data:
                 cv2.putText(frame, f"Press 'g' for good posture, 'b' for bad posture", 
                           (10, frame.shape[0] - 90), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 165, 255), 2, cv2.LINE_AA)
@@ -298,7 +285,6 @@ while cap.isOpened():
             else:
                 poor_posture_start_time = None  # Reset timer when posture is good
 
-    # Display the frame
     cv2.imshow('Posture Corrector', frame)
 
     # Handle keyboard inputs
@@ -308,36 +294,27 @@ while cap.isOpened():
     # Sample collection with cooldown
     if collecting_data and current_frame_data and is_calibrated:
         if (key == ord('g') or key == ord('b')) and current_time - last_sample_time > sample_cooldown:
-            # Create a copy with the label
             sample = current_frame_data.copy()
             sample['posture_label'] = 'good' if key == ord('g') else 'bad'
             
-            # Add to dataset
             posture_data.append(sample)
             data_collection_count += 1
             
-            # Update last sample time for cooldown
             last_sample_time = current_time
             
-            # Show feedback
             label_type = "GOOD" if key == ord('g') else "BAD"
             print(f"Sample #{data_collection_count} recorded as {label_type} posture")
             
-            # Save periodically
             if len(posture_data) >= save_interval:
                 save_data()
     
-    # Other controls
     if key == ord('q'):
-        # Save any remaining data before quitting
         save_data()
         break
     elif key == ord('p'):
-        # Toggle data collection pause/resume
         collecting_data = not collecting_data
         print(f"Data collection {'resumed' if collecting_data else 'paused'}")
     elif key == ord('d'):
-        # Dump data to file immediately
         save_data()
 
 cap.release()
