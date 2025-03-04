@@ -11,12 +11,10 @@ Install requirements:
 pip install -r requirements.txt
 
 Run the app:
+source test_env/bin/activate
+pip3 install -r requirements.txt
 python3 posture_gui.py
 
 How it works
 The app uses your camera to track your body position. A machine learning model (Random Forest) analyzes your posture and decides if it's good or bad. When your posture is bad, you'll get an alert after your set timer.
 
-Requirements
-
-Python 3.6+
-Webcam
